@@ -1,49 +1,59 @@
 #include <stdio.h>
 #include <string.h>
-#define kota 6144
-#define ücret 0.011719
-#define mb 1024
-float aşım_ücreti;
-float upload = 0;
-float download = 0;
-
-void kotaAsımı(int kullanlan_download) {
-    float aşım;
-    aşım = kullanlan_download - kota;
-    if (aşım > 0) {
-        aşım_ücreti = (float)aşım * ücret;
+// Tanımlanan sabitler
+#define KOTA 6144       // Kota değeri (MB)
+#define UCRET 0.011719  // Kota aşımı ücret birim fiyatı (TL/MB)
+#define MB 1024         // 1 GB = 1024 MB
+// Global değişkenler
+float asimUcreti;       // Kota aşımı ücretini saklar
+float upload = 0;       // Toplam yükleme (upload) miktarını saklar
+float download = 0;     // Toplam indirme (download) miktarını saklar
+// Kota aşımı ücretini hesaplayan fonksiyon
+void kotaAsimi(int kullanilanDownland) {
+    float asim; // Kota aşım miktarını tutar
+    asim = kullanilanDownland - KOTA; // Kota aşımı hesaplanır
+    if (asim > 0) { // Kota aşıldıysa
+        asimUcreti = asim * UCRET; // Aşım ücreti hesaplanır
     }
 }
-
+// Dosyadan belirtilen aya ait verileri okuyan fonksiyon
 void istenenAY(const char *filename, const char *kelime) {
-    int gün;
-    float upload1 = 0, download1 = 0;
+    int gun; // Gün bilgisi
+    float upload1 = 0, download1 = 0; // Geçici upload ve download değerleri
+    char karakter[64]; // Dosyadan okunan satırları saklar
+    // Dosyayı açma
     FILE *adsl = fopen(filename, "r");
-    if (adsl == NULL) {
-        printf("Dosya açılamadı\n");
+    if (adsl == NULL) { // Dosya açılamadıysa hata mesajı basılır
+        printf("Dosya acilamadi\n");
+        return;
     }
-
-    char karakter[256];
+    // Dosyadaki satırları okuma
     while (fgets(karakter, sizeof(karakter), adsl)) {
+        // Satırın başı aranan kelimeyle eşleşiyorsa
         if (strncmp(karakter, kelime, strlen(kelime)) == 0) {
-            if (sscanf(karakter, "%s %d %f %f", karakter, &gün, &upload1, &download1) == 4) {
-                upload += upload1;
-                download += download1;
+            // Satırdaki bilgileri ayrıştırma
+            if (sscanf(karakter, "%s %d %f %f", karakter, &gun, &upload1, &download1) == 4) {
+                upload += upload1;   // Yükleme miktarını toplar
+                download += download1; // İndirme miktarını toplar
             }
         }
     }
-    kotaAsımı(download);
+    // Kota aşımını hesaplama
+    kotaAsimi(download);
     fclose(adsl);
 }
-
 int main() {
-    char ay_adı[20];
+    char ayAdi[20]; // Kullanıcıdan alınacak ay ismi
+    // Kullanıcıdan fatura oluşturulacak ayı isteme
     printf("Hangi ayin faturasini istiyorusunuz: \n");
-    scanf("%s", ay_adı);
-    printf("%s 2012 faturaniz olusturulmustur\n ", ay_adı);
-    istenenAY("adsl.txt",ay_adı);
+    scanf("%s", ayAdi);
+    printf("%s 2012 faturaniz olusturulmustur\n ", ayAdi);
+    // Belirtilen aya ait verileri işlemeye başlama
+    istenenAY("adsl.txt", ayAdi);
+    // Fatura dosyasını oluşturma ve yazma
     FILE *dosya;
     dosya = fopen("fatura.txt", "w");
-    fprintf(dosya, "%s 2012\nToplam yukleme(upload): %.2f GB\nToplam indirme(download): %.2f GB\nKota asim ucreti: %.2f", ay_adı, upload/mb, download/mb, aşım_ücreti);
-    return 1;
+    fprintf(dosya, "%s 2012\nToplam yukleme(upload): %.2f GB\nToplam indirme(download): %.2f GB\nKota asim ucreti: %.2f",
+            ayAdi, upload / MB, download / MB, asimUcreti);
+    return 0;
 }

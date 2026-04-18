@@ -11,7 +11,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
-add_executable(RestoranSimulasyonu main.c)
+add_executable(RestoranSimulasyonu main.c
+        models.h)
 
 # Raylib'i projeye bağla
 target_link_libraries(RestoranSimulasyonu raylib)
